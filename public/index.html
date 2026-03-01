@@ -18,23 +18,74 @@
 
     <script>
         const socket = io();
+            const roomId = Math.random().toString(36).substr(2, 9);
+            const myIP = '192.168.129.61';
+            const controllerUrl = `http://${myIP}:3001/controller.html?room=${roomId}`;
 
-        const roomId = Math.random().toString(36).substr(2, 9);
-        const myIP = '192.168.129.61';
-        const controllerUrl = `http://${myIP}:3000/controller.html?room=${roomId}`;
+            socket.emit('join-room', roomId);
 
-        new QRCode(document.getElementById("qrcode"), {
-            text: controllerUrl,
-            width: 256,
-            height: 256
-        });
+            const config = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
 
-        console.log("Controller URL:", controllerUrl);
-        socket.emit('join-room', roomId);
+            let peerConnection;
+            let dataChannel;
 
-        socket.on('user-connected', () => {
-            document.getElementById('status').innerText = "connected!!";
-        });
+            const startWebRTC = async () => {
+                if (peerConnection) return;
+                console.log("starting WebRTC process on mac");
+                peerConnection = new RTCPeerConnection(config);
+                dataChannel = peerConnection.createDataChannel("stars");
+
+                dataChannel.onopen = () => {
+                    console.log("DATA CHANNEL IS LIVE!");
+                    document.getElementById('status').innerText = "P2P CONNECTED!";
+                };
+
+                dataChannel.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log("Received star at:", data.x, data.y);
+                    // createStar(data.x, data.y); // Make sure this function exists!
+                };
+
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        socket.emit('peerIce', roomId, e.candidate);
+                    }
+                };
+
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+
+                console.log("📤 Laptop: Sending offer to room:", roomId);
+                socket.emit('peerOffer', roomId, offer);
+            };
+
+            new QRCode(document.getElementById("qrcode"), {
+                text: controllerUrl,
+                width: 256,
+                height: 256
+            });
+
+            socket.on('user-connected', () => {
+                console.log("phone has entered the room!");
+                document.getElementById('status').innerText = "phone detected... handshaking...";
+                startWebRTC();
+                
+            });
+
+            socket.on('peerAnswer', async (answer) => {
+                console.log("laptop received answer from phone");
+                await peerConnection.setRemoteDescription(answer);
+            });
+
+            socket.on('peerIce', async (candidate) => {
+                if (peerConnection) {
+                    await peerConnection.addIceCandidate(candidate);
+                }
+            });
+            console.log("LAPTOP ROOM ID:", roomId);
+            document.getElementById('status').innerText = "Room: " + roomId + " - waiting 4 phonee";
     </script>
 </body>
 

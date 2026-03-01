@@ -4,22 +4,60 @@
 <head>
     <title>Space Controller</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
-
+<!-- this is 4 the phone (answering) aka other half of handshake -->
 <body style="background: #222; color: white; text-align: center;">
     <h1>Control the Stars</h1>
     <p id="msg">Connecting...</p>
 
     <script>
+        console.log("controller script initialized");
         const socket = io();
         const urlParams = new URLSearchParams(window.location.search);
         const roomId = urlParams.get('room');
 
-        if (roomId) {
-            socket.emit('controller-joined', roomId);
-            document.getElementById('msg').innerText = "Connected to room: " + roomId;
-        }
+        const servers = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
+            let peerConnection;
+            const setupWebRTC = async () => {
+                peerConnection = new RTCPeerConnection(servers);
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        socket.emit('peerIce', roomId, e.candidate);
+                    }
+                };
+                peerConnection.ondatachannel = (event) => {
+                    const receiveChannel = event.channel;
+                    receiveChannel.onopen = () => console.log("data chananel connected 2 phone");
+                    window.sendData = (data) => {
+                        if (receiveChannel.readyState === 'open') {
+                            receiveChannel.send(JSON.stringify(data));
+                        }
+                    };
+                };
+            };
+            
+            socket.on('peerOffer', async (offer) => {
+                console.log("phone received offer!");
+                await setupWebRTC();
+                await peerConnection.setRemoteDescription(offer);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                console.log("answering the laptop");
+                socket.emit('peerAnswer', roomId, answer);
+                });
+
+                socket.on('connect', () => {
+                    console.log("phone is connected");
+                    if (roomId) {
+                        document.getElementById('msg').innerText = "we in da room: " + roomId;
+                        socket.emit('controller-joined', roomId);
+                        }
+                    });
     </script>
 </body>
 
