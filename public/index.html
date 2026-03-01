@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>space Conductor</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body style="background: #0b0e14; color: white; font-family: sans-serif; text-align: center;">
+
+    <h1>Space Conductor</h1>
+    <p>Scan to connect your controller:</p>
+
+    <div id="qrcode" style="display: flex; justify-content: center; margin: 20px;"></div>
+
+    <div id="status">waiting 4 phonee</div>
+
+    <script>
+        const socket = io();
+
+        const roomId = Math.random().toString(36).substr(2, 9);
+        const myIP = '192.168.129.61';
+        const controllerUrl = `http://${myIP}:3000/controller.html?room=${roomId}`;
+
+        new QRCode(document.getElementById("qrcode"), {
+            text: controllerUrl,
+            width: 256,
+            height: 256
+        });
+
+        console.log("Controller URL:", controllerUrl);
+        socket.emit('join-room', roomId);
+
+        socket.on('user-connected', () => {
+            document.getElementById('status').innerText = "connected!!";
+        });
+    </script>
+</body>
+
+</html>
