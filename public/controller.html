@@ -14,6 +14,7 @@
     <p id="msg">Connecting...</p>
 
     <script>
+        let dataChannel;
         console.log("controller script initialized");
         const socket = io();
         const urlParams = new URLSearchParams(window.location.search);
@@ -30,13 +31,16 @@
                         socket.emit('peerIce', roomId, e.candidate);
                     }
                 };
+
                 peerConnection.ondatachannel = (event) => {
-                    const receiveChannel = event.channel;
-                    receiveChannel.onopen = () => console.log("data chananel connected 2 phone");
-                    window.sendData = (data) => {
-                        if (receiveChannel.readyState === 'open') {
-                            receiveChannel.send(JSON.stringify(data));
-                        }
+                    dataChannel = event.channel;
+                    dataChannel.onopen = () => {
+                        console.log("data channel connected 2 phone");
+                        document.getElementById('msg').innerText = "STARS CONNECTED! Drag your finger!";
+                    };
+
+                    dataChannel.onmessage = (e) => {
+                        console.log("Message from laptop:", e.data);
                     };
                 };
             };
@@ -44,10 +48,12 @@
             socket.on('peerOffer', async (offer) => {
                 console.log("phone received offer!");
                 await setupWebRTC();
-                await peerConnection.setRemoteDescription(offer);
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
-                console.log("answering the laptop");
+                
+                console.log("answering the laptop back", roomId);
                 socket.emit('peerAnswer', roomId, answer);
                 });
 
@@ -58,6 +64,23 @@
                         socket.emit('controller-joined', roomId);
                         }
                     });
+                    
+                    const sendTouchData = (e) => {
+                        if (dataChannel && dataChannel.readyState === 'open') {
+                            const touch = e.touches[0];
+                            const data = {
+                                x: touch.clientX / window.innerWidth,
+                                y: touch.clientY / window.innerHeight
+                            };
+                            dataChannel.send(JSON.stringify(data));
+                            console.log("Sent:", data);
+                            }
+                        };
+
+                        window.addEventListener('touchmove', (e) => {
+                            sendTouchData(e);
+                            e.preventDefault();
+                        }, { passive: false });
     </script>
 </body>
 

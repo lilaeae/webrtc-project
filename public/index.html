@@ -39,13 +39,16 @@
 
                 dataChannel.onopen = () => {
                     console.log("DATA CHANNEL IS LIVE!");
-                    document.getElementById('status').innerText = "P2P CONNECTED!";
+                    document.getElementById('status').innerText = "CONNECTED!";
                 };
 
                 dataChannel.onmessage = (event) => {
                     const data = JSON.parse(event.data);
-                    console.log("Received star at:", data.x, data.y);
-                    // createStar(data.x, data.y); // Make sure this function exists!
+                    const screenX = data.x * window.innerWidth;
+                    const screenY = data.y * window.innerHeight;
+
+                    console.log("Drawing star at:", screenX, screenY);
+                    createStar(screenX, screenY);
                 };
 
                 peerConnection.onicecandidate = (e) => {
@@ -57,7 +60,7 @@
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
 
-                console.log("📤 Laptop: Sending offer to room:", roomId);
+                console.log("laptop side we are sending offer to room:", roomId);
                 socket.emit('peerOffer', roomId, offer);
             };
 
@@ -75,17 +78,29 @@
             });
 
             socket.on('peerAnswer', async (answer) => {
-                console.log("laptop received answer from phone");
-                await peerConnection.setRemoteDescription(answer);
-            });
+                    console.log("🎯 Laptop: Received Answer from phone!");
+                    try {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                        console.log("laptop is ready for ice candidates");
+                    } catch (err) {
+                        console.error("failed to set a remote description", err);
+                    }
+                });
 
             socket.on('peerIce', async (candidate) => {
-                if (peerConnection) {
-                    await peerConnection.addIceCandidate(candidate);
-                }
-            });
+                    if (peerConnection && peerConnection.remoteDescription) {
+                        try {
+                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            console.log("the ice candidate is added");
+                        } catch (e) {
+                            console.error("error adding ice candidate aka", e);
+                        }
+                    } else {
+                        console.warn(" ice candidate ignored because remoteDescription is not set yet");
+                    }
+                });
             console.log("LAPTOP ROOM ID:", roomId);
-            document.getElementById('status').innerText = "Room: " + roomId + " - waiting 4 phonee";
+            document.getElementById('status').innerText = "room: " + roomId + " - waiting 4 phonee";
     </script>
 </body>
 

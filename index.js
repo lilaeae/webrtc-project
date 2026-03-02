@@ -19,6 +19,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('controller-joined', (roomId) => {
+        socket.join(roomId);
         socket.to(roomId).emit('user-connected');
     });
 
