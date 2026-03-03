@@ -16,26 +16,7 @@
 
     <div id="status">waiting 4 phonee</div>
 
-    <script>
-        const socket = io();
-
-        const roomId = Math.random().toString(36).substr(2, 9);
-        const myIP = '192.168.129.61';
-        const controllerUrl = `http://${myIP}:3000/controller.html?room=${roomId}`;
-
-        new QRCode(document.getElementById("qrcode"), {
-            text: controllerUrl,
-            width: 256,
-            height: 256
-        });
-
-        console.log("Controller URL:", controllerUrl);
-        socket.emit('join-room', roomId);
-
-        socket.on('user-connected', () => {
-            document.getElementById('status').innerText = "connected!!";
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
