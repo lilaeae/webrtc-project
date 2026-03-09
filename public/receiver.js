@@ -56,7 +56,6 @@ socket.on('connect', () => {
     }
 });
 
-// Touch Logic
 const sendTouchData = (e) => {
     if (peer && peer.connected) {
         const touch = e.touches[0];
@@ -64,8 +63,10 @@ const sendTouchData = (e) => {
             x: touch.clientX / window.innerWidth,
             y: touch.clientY / window.innerHeight,
             color: getColor(),
-            shape: currentShape
+            shape: currentShape,
+            persistent: document.getElementById('persistenceToggle').checked
         };
+        if (navigator.vibrate) navigator.vibrate(10);
         peer.send(JSON.stringify(data));
     }
 };

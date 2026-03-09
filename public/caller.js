@@ -5,6 +5,8 @@ const myIP = '192.168.129.61';
 const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
 let currentGravityX = 0;
 let currentGravityY = 0;
+let blackHole = { x: 0, y: 0, active: false, size: 50 };
+let score = 0;
 
 socket.emit('join-room', roomId);
 
@@ -83,48 +85,106 @@ class Star {
         this.y = y;
         this.color = color || 'white';
         this.shape = shape || 'circle';
-        this.size = 5;
-        this.vx = 0;
-        this.vy = 0;
+        this.size = Math.random() * 5 + 2; 
+        this.vx = (Math.random() - 0.5) * 2; 
+        this.vy = (Math.random() - 0.5) * 2;
+        this.alpha = 1.0; 
     }
 
-    update(gravityX, gravityY) {
-
+    update(gravityX, gravityY, blackHole) {
         this.vx += gravityX * 0.05;
         this.vy += gravityY * 0.05;
-        this.vx *= 0.98;
+
+        if (blackHole.active) {
+            const dx = blackHole.x - this.x;
+            const dy = blackHole.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 300) { 
+                const force = (300 - distance) / 1500;
+                this.vx += dx * force;
+                this.vy += dy * force;
+            }
+        }
+
+        this.vx *= 0.98; 
         this.vy *= 0.98;
         this.x += this.vx;
         this.y += this.vy;
+
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 
     draw() {
+        ctx.save(); 
+        ctx.globalAlpha = this.alpha; 
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15; 
         ctx.shadowColor = this.color;
+
         ctx.beginPath();
         if (this.shape === 'circle') {
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         } else {
-            ctx.rect(this.x - 5, this.y - 5, 10, 10);
+            ctx.rect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
         }
         ctx.fill();
+        ctx.restore(); 
     }
+}
+
+setInterval(() => {
+    blackHole.active = true;
+    blackHole.x = Math.random() * canvas.width;
+    blackHole.y = Math.random() * canvas.height;
+    setTimeout(() => { blackHole.active = false; }, 5000);
+}, 10000);
+
+function drawBlackHole() {
+    if (!blackHole.active) return;
+    const pulse = Math.sin(Date.now() / 200) * 10;
+
+    ctx.beginPath();
+    ctx.arc(blackHole.x, blackHole.y, blackHole.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'black';
+    ctx.shadowBlur = 50;
+    ctx.shadowColor = 'purple'; 
+    ctx.fill();
 }
 
 function animate() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    stars.forEach(star => {
+    if (blackHole.active) {
+        drawBlackHole();
+    }
 
-        star.update(currentGravityX, currentGravityY);
-        star.draw();
+    stars = stars.filter(star => {
+        if (blackHole.active) {
+            const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
+            if (dist < blackHole.size) {
+                score -= 10; 
+                return false;
+            }
+        }
+        return true;
     });
+
+    stars.forEach(star => {
+        star.update(currentGravityX, currentGravityY, blackHole);
+        star.draw();
+        score += 0.01; 
+    });
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText(`Constellation Score: ${Math.floor(score)}`, 20, 40);
 
     requestAnimationFrame(animate);
 }
 animate();
+
+
 
