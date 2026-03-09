@@ -2,7 +2,9 @@ const socket = io();
 const roomId = Math.random().toString(36).substr(2, 9);
 // const myIP = '172.30.103.155';
 const myIP = '192.168.129.61';
-const controllerUrl = `http://${myIP}:3001/receiver.html?room=${roomId}`;
+const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
+let currentGravityX = 0;
+let currentGravityY = 0;
 
 socket.emit('join-room', roomId);
 
@@ -29,12 +31,16 @@ const startPeer = () => {
 
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
-        const screenX = data.x * canvas.width;
-        const screenY = data.y * canvas.height;
+        if (data.type === 'gravity') {
+            currentGravityX = data.tiltX / 45;
+            currentGravityY = data.tiltY / 45;
+        } else {
 
-        // Create a new persistent star
-        const newStar = new Star(screenX, screenY, data.color, data.shape);
-        stars.push(newStar);
+            const screenX = data.x * canvas.width;
+            const screenY = data.y * canvas.height;
+            const newStar = new Star(screenX, screenY, data.color, data.shape);
+            stars.push(newStar);
+        }
     });
 
     peer.on('error', (err) => console.error("peer error:", err));
@@ -46,7 +52,7 @@ new QRCode(document.getElementById("qrcode"), {
     height: 256
 });
 
-// socket events
+
 socket.on('user-connected', () => {
     console.log("phone has entered the room!");
     document.getElementById('status').innerText = "phone detected... handshaking...";
@@ -64,7 +70,6 @@ const canvas = document.getElementById('spaceCanvas');
 const ctx = canvas.getContext('2d');
 let stars = [];
 
-// Match canvas to screen size
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -79,24 +84,18 @@ class Star {
         this.color = color || 'white';
         this.shape = shape || 'circle';
         this.size = 5;
-        this.vx = 0; // Velocity X (for gravity later)
-        this.vy = 0; // Velocity Y
+        this.vx = 0;
+        this.vy = 0;
     }
 
     update(gravityX, gravityY) {
-        // Apply tilt to velocity
+
         this.vx += gravityX * 0.05;
         this.vy += gravityY * 0.05;
-
-        // Apply friction so they don't slide forever
         this.vx *= 0.98;
         this.vy *= 0.98;
-
-        // Move the star
         this.x += this.vx;
         this.y += this.vy;
-
-        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
@@ -109,20 +108,19 @@ class Star {
         if (this.shape === 'circle') {
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         } else {
-            // Square/Asteroid shape
             ctx.rect(this.x - 5, this.y - 5, 10, 10);
         }
         ctx.fill();
     }
 }
 
-// The Animation Loop (60fps)
 function animate() {
-    // Clear the screen slightly to leave faint trails
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     stars.forEach(star => {
+
+        star.update(currentGravityX, currentGravityY);
         star.draw();
     });
 
