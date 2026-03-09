@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Space Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/simple-peer@9/simplepeer.min.js"></script>
+</head>
+<!-- this is 4 the phone (answering) aka other half of handshake -->
+
+<body
+    style="background: #222; color: white; text-align: center; margin: 0; overflow: hidden; font-family: sans-serif; user-select: none;">
+
+    <div id="controls"
+        style="position: absolute; top: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 15px; box-sizing: border-box; z-index: 10;">
+        <p id="msg" style="margin: 0 0 10px 0;">Connecting...</p>
+
+        <div style="margin-bottom: 15px;">
+            <label>Star Color</label><br>
+            <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%;">
+        </div>
+
+        <div>
+            <button onclick="setShape('circle')" style="padding: 10px;">Circle</button>
+            <button onclick="setShape('square')" style="padding: 10px;">Square</button>
+        </div>
+    </div>
+
+    <div id="touch-pad" style="width: 100vw; height: 100vh;"></div>
+
+    <script src="receiver.js"></script>
+</body>
+
+</html>
