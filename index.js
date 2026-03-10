@@ -1,31 +1,34 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
 const express = require('express');
+const http = require('http');
+const ngrok = require('@ngrok/ngrok');
+
 const app = express();
-const https = require('https');
-
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssl-'));
-const keyPath = path.join(tmpDir, 'key.pem');
-const certPath = path.join(tmpDir, 'cert.pem');
-execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=192.168.129.61" -addext "subjectAltName=IP:192.168.129.61,DNS:localhost"`, { stdio: 'ignore' });
-
-const server = https.createServer({
-    key: fs.readFileSync(keyPath),
-    cert: fs.readFileSync(certPath)
-}, app);
+const server = http.createServer(app);
 const io = require('socket.io')(server);
 
-fs.unlinkSync(keyPath);
-fs.unlinkSync(certPath);
-fs.rmdirSync(tmpDir);
+let ngrokUrl = null;
 
 app.use(express.static('public', { index: 'caller.html' }));
 
+app.get('/ngrok-url', (req, res) => {
+    if (ngrokUrl) {
+        res.json({ url: ngrokUrl });
+    } else {
+        res.status(503).json({ error: 'ngrok tunnel not ready yet' });
+    }
+});
+
 const PORT = 3001;
-server.listen(PORT, () => {
-    console.log(`space server!!! (HTTPS on port ${PORT})`);
+server.listen(PORT, async () => {
+    console.log(`space server!!! (HTTP on port ${PORT})`);
+    try {
+        const listener = await ngrok.forward({ addr: PORT, authtoken_from_env: true });
+        ngrokUrl = listener.url();
+        console.log(`ngrok tunnel live at: ${ngrokUrl}`);
+    } catch (err) {
+        console.error('ngrok failed to start:', err.message);
+        console.error('Make sure NGROK_AUTHTOKEN is set in your environment.');
+    }
 });
 
 io.on('connection', (socket) => {

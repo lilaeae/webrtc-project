@@ -1,8 +1,5 @@
 const socket = io();
 const roomId = Math.random().toString(36).substr(2, 9);
-// const myIP = '172.30.103.155';
-const myIP = '192.168.129.61';
-const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
 let currentGravityX = 0;
 let currentGravityY = 0;
 let blackHole = { x: 0, y: 0, active: false, size: 50 };
@@ -12,6 +9,22 @@ let starsLost = 0;
 socket.emit('join-room', roomId);
 
 let peer;
+
+fetch('/ngrok-url')
+    .then(res => res.json())
+    .then(data => {
+        const controllerUrl = `${data.url}/receiver.html?room=${roomId}`;
+        new QRCode(document.getElementById("qrcode"), {
+            text: controllerUrl,
+            width: 256,
+            height: 256
+        });
+        console.log("QR code points to:", controllerUrl);
+    })
+    .catch(err => {
+        console.error("Could not get ngrok URL:", err);
+        document.getElementById('status').innerText = "ngrok tunnel not ready - restart server";
+    });
 
 const startPeer = () => {
     if (peer) return;
@@ -41,7 +54,7 @@ const startPeer = () => {
 
         else if (data.type === 'supernova') {
             stars.forEach(star => {
-                
+
                 const dx = star.x - canvas.width / 2;
                 const dy = star.y - canvas.height / 2;
                 star.vx += dx * 0.1;
@@ -61,12 +74,6 @@ const startPeer = () => {
 
     peer.on('error', (err) => console.error("peer error:", err));
 };
-
-new QRCode(document.getElementById("qrcode"), {
-    text: controllerUrl,
-    width: 256,
-    height: 256
-});
 
 
 socket.on('user-connected', () => {
@@ -184,7 +191,7 @@ function animate() {
         }
 
         if (star.isDead) {
-            star.size *= 0.85; 
+            star.size *= 0.85;
             if (star.size < 0.5) {
                 starsLost++;
                 return false;
@@ -212,7 +219,7 @@ function animate() {
 
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
-   
+
 
     document.getElementById('starCount').innerText = stars.length;
     document.getElementById('currentScore').innerText = score;
