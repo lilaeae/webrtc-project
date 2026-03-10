@@ -212,7 +212,7 @@ function animate() {
 
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
-    ctx.fillText(`Constellation Score: ${score}`, 20, 40);
+   
 
     document.getElementById('starCount').innerText = stars.length;
     document.getElementById('currentScore').innerText = score;
