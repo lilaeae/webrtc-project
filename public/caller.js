@@ -6,7 +6,8 @@ const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
 let currentGravityX = 0;
 let currentGravityY = 0;
 let blackHole = { x: 0, y: 0, active: false, size: 50 };
-let score = 0;
+let starsCreated = 0;
+let starsLost = 0;
 
 socket.emit('join-room', roomId);
 
@@ -33,15 +34,32 @@ const startPeer = () => {
 
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
+
+        // 1. Handle Tilt/Gravity
         if (data.type === 'gravity') {
             currentGravityX = data.tiltX / 10;
             currentGravityY = data.tiltY / 10;
-        } else {
+        }
+        // 2. Handle Supernova Explosion
+        else if (data.type === 'supernova') {
+            stars.forEach(star => {
+                // Calculate direction from center of screen to the star
+                const dx = star.x - canvas.width / 2;
+                const dy = star.y - canvas.height / 2;
+
+                // Add a sudden burst of velocity outward
+                star.vx += dx * 0.1;
+                star.vy += dy * 0.1;
+            });
+            console.log("SUPERNOVA ACTIVATED");
+        }
+        // 3. Default: Draw a new Star
+        else {
             const screenX = data.x * canvas.width;
             const screenY = data.y * canvas.height;
-            // Pass the new mass property!
             const newStar = new Star(screenX, screenY, data.color, data.shape, data.mass);
             stars.push(newStar);
+            starsCreated++;
         }
     });
 
@@ -85,8 +103,8 @@ class Star {
         this.y = y;
         this.color = color || 'white';
         this.shape = shape || 'circle';
-        this.mass = mass || 1; 
-        this.size = this.mass * 2 + 2; 
+        this.mass = mass || 1;
+        this.size = this.mass * 2 + 2;
         this.vx = 0;
         this.vy = 0;
     }
@@ -101,14 +119,15 @@ class Star {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < 400) {
-                const force = (400 - distance) / (3000 * this.mass); 
+                const force = (400 - distance) / (10000 * this.mass);
                 this.vx += dx * force;
                 this.vy += dy * force;
             }
         }
+        const friction = this.mass === 0.5 ? 0.999 : 0.95;
+        this.vx *= friction;
+        this.vy *= friction;
 
-        this.vx *= 0.95;
-        this.vy *= 0.95;
         this.x += this.vx;
         this.y += this.vy;
 
@@ -148,7 +167,7 @@ function drawBlackHole() {
     ctx.arc(blackHole.x, blackHole.y, blackHole.size, 0, Math.PI * 2);
     ctx.fillStyle = 'black';
     ctx.shadowBlur = 50;
-    ctx.shadowColor = 'purple'; 
+    ctx.shadowColor = 'purple';
     ctx.fill();
 }
 
@@ -163,23 +182,56 @@ function animate() {
     stars = stars.filter(star => {
         if (blackHole.active) {
             const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
+
+            // If star hits the event horizon, start shrinking it
             if (dist < blackHole.size) {
-                score -= 10; 
+                star.isDead = true;
+            }
+        }
+
+        // Remove star only when it's too small to see
+        if (star.isDead) {
+            star.size *= 0.85; // Rapidly shrink
+            if (star.size < 0.5) {
+                starsLost++;
                 return false;
             }
         }
         return true;
     });
 
+    let isNearBlackHole = false;
+
     stars.forEach(star => {
+        if (blackHole.active) {
+            const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
+            if (dist < 400) isNearBlackHole = true;
+        }
         star.update(currentGravityX, currentGravityY, blackHole);
         star.draw();
-        score += 0.01; 
     });
+
+    if (isNearBlackHole && peer && peer.connected) {
+        peer.send(JSON.stringify({ type: 'vibrate', intensity: 50 }));
+    }
+
+    const score = starsCreated - starsLost;
 
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
-    ctx.fillText(`Constellation Score: ${Math.floor(score)}`, 20, 40);
+    ctx.fillText(`Constellation Score: ${score}`, 20, 40);
+    // Update UI elements
+    document.getElementById('starCount').innerText = stars.length;
+    document.getElementById('currentScore').innerText = score;
+
+    const statusEl = document.getElementById('systemStatus');
+    if (blackHole.active) {
+        statusEl.innerText = "WARNING: SINGULARITY DETECTED";
+        statusEl.style.color = "red";
+    } else {
+        statusEl.innerText = "SYSTEM STABLE";
+        statusEl.style.color = "lime";
+    }
 
     requestAnimationFrame(animate);
 }

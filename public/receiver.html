@@ -1,4 +1,5 @@
-c<!DOCTYPE html>
+c
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -30,6 +31,10 @@ c<!DOCTYPE html>
                 style="padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; margin-top: 10px; font-weight: bold;">
                 OFFLINE: Enable Tilt Gravity
             </button>
+            <button onclick="supernova()" style="background: orange; padding: 10px; width: 80%; margin-top: 10px;">
+                SUPERNOVA (Emergency Push)
+            </button>
+
             <div style="margin-top: 10px;">
                 <label>Persistence (Stay Forever):</label>
                 <input type="checkbox" id="persistenceToggle">
@@ -37,10 +42,16 @@ c<!DOCTYPE html>
             <div style="margin-top: 15px;">
                 <label>Star Type (Mass)</label><br>
                 <select id="starMass" style="padding: 5px; width: 80%; background: #333; color: white;">
-                    <option value="1">Light (Fast)</option>
-                    <option value="3">Medium (Stable)</option>
-                    <option value="8">Heavy (Slow/Hard to Move)</option>
+                    <option value="1">Light</option>
+                    <option value="3">Medium</option>
+                    <option value="8">Heavy</option>
                 </select>
+            </div>
+            <div id="emergency-controls" style="margin-top: 20px; border-top: 1px solid #555; padding-top: 10px;">
+                <button onclick="supernova()"
+                    style="background: linear-gradient(to bottom, #ff9800, #e65100); color: white; padding: 15px; width: 100%; border-radius: 10px; border: none; font-weight: bold; box-shadow: 0 4px #bf360c;">
+                    ACTIVATE SUPERNOVA
+                </button>
             </div>
         </div>
     </div>

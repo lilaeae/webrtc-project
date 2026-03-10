@@ -38,7 +38,10 @@ const startPeer = () => {
     });
 
     peer.on('data', (raw) => {
-        console.log("Message from laptop:", raw);
+        const data = JSON.parse(raw);
+        if (data.type === 'vibrate' && navigator.vibrate) {
+            navigator.vibrate(data.intensity); // Phone shakes when stars are in danger!
+        }
     });
 
     peer.on('error', (err) => console.error("peer error:", err));
@@ -112,5 +115,11 @@ accelButton.onclick = () => {
         accelButton.style.background = '#2ecc71';
         accelButton.innerText = "GRAVITY ONLINE";
         window.addEventListener('deviceorientation', handleTilt);
+    }
+};
+
+window.supernova = () => {
+    if (peer && peer.connected) {
+        peer.send(JSON.stringify({ type: 'supernova' }));
     }
 };
