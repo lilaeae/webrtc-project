@@ -7,6 +7,7 @@ const roomId = urlParams.get('room');
 let peer;
 let currentShape = 'circle';
 let lastTiltSent = 0; 
+let lastDrawTime = 0;
 
 const getColor = () => {
     const hue = document.getElementById('colorHue').value;
@@ -57,6 +58,9 @@ socket.on('connect', () => {
 });
 
 const sendTouchData = (e) => {
+    const now = Date.now();
+    if (now - lastDrawTime < 100) return;
+
     if (peer && peer.connected) {
         const touch = e.touches[0];
         const data = {
@@ -64,10 +68,12 @@ const sendTouchData = (e) => {
             y: touch.clientY / window.innerHeight,
             color: getColor(),
             shape: currentShape,
-            persistent: document.getElementById('persistenceToggle').checked
+            mass: parseFloat(document.getElementById('starMass').value)
         };
-        if (navigator.vibrate) navigator.vibrate(10);
         peer.send(JSON.stringify(data));
+        lastDrawTime = now; 
+
+        if (navigator.vibrate) navigator.vibrate(10);
     }
 };
 

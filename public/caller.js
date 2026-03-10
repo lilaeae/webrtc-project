@@ -34,13 +34,13 @@ const startPeer = () => {
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
         if (data.type === 'gravity') {
-            currentGravityX = data.tiltX / 45;
-            currentGravityY = data.tiltY / 45;
+            currentGravityX = data.tiltX / 10;
+            currentGravityY = data.tiltY / 10;
         } else {
-
             const screenX = data.x * canvas.width;
             const screenY = data.y * canvas.height;
-            const newStar = new Star(screenX, screenY, data.color, data.shape);
+            // Pass the new mass property!
+            const newStar = new Star(screenX, screenY, data.color, data.shape, data.mass);
             stars.push(newStar);
         }
     });
@@ -80,35 +80,35 @@ window.onresize = resize;
 resize();
 
 class Star {
-    constructor(x, y, color, shape) {
+    constructor(x, y, color, shape, mass) {
         this.x = x;
         this.y = y;
         this.color = color || 'white';
         this.shape = shape || 'circle';
-        this.size = Math.random() * 5 + 2; 
-        this.vx = (Math.random() - 0.5) * 2; 
-        this.vy = (Math.random() - 0.5) * 2;
-        this.alpha = 1.0; 
+        this.mass = mass || 1; 
+        this.size = this.mass * 2 + 2; 
+        this.vx = 0;
+        this.vy = 0;
     }
 
     update(gravityX, gravityY, blackHole) {
-        this.vx += gravityX * 0.05;
-        this.vy += gravityY * 0.05;
+        this.vx += (gravityX * 0.03) / this.mass;
+        this.vy += (gravityY * 0.03) / this.mass;
 
         if (blackHole.active) {
             const dx = blackHole.x - this.x;
             const dy = blackHole.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < 300) { 
-                const force = (300 - distance) / 1500;
+            if (distance < 400) {
+                const force = (400 - distance) / (3000 * this.mass); 
                 this.vx += dx * force;
                 this.vy += dy * force;
             }
         }
 
-        this.vx *= 0.98; 
-        this.vy *= 0.98;
+        this.vx *= 0.95;
+        this.vy *= 0.95;
         this.x += this.vx;
         this.y += this.vy;
 
@@ -117,10 +117,9 @@ class Star {
     }
 
     draw() {
-        ctx.save(); 
-        ctx.globalAlpha = this.alpha; 
+        ctx.save();
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 15; 
+        ctx.shadowBlur = this.mass * 5;
         ctx.shadowColor = this.color;
 
         ctx.beginPath();
@@ -130,7 +129,7 @@ class Star {
             ctx.rect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
         }
         ctx.fill();
-        ctx.restore(); 
+        ctx.restore();
     }
 }
 
