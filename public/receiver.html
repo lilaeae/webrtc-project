@@ -12,48 +12,29 @@ c
 </head>
 <!-- this is 4 the phone (answering) aka other half of handshake -->
 
-<body
-    style="background: #222; color: white; text-align: center; margin: 0; overflow: hidden; font-family: sans-serif; user-select: none;">
+<body style="background: #000; color: white; margin: 0; overflow: hidden; font-family: monospace; user-select: none;">
 
     <div id="controls"
-        style="position: absolute; top: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 15px; box-sizing: border-box; z-index: 10;">
+        style="position: absolute; top: 0; width: 100%; padding: 15px; box-sizing: border-box; z-index: 10;">
         <p id="msg" style="margin: 0 0 10px 0;">Connecting...</p>
 
-        <div style="margin-bottom: 15px;">
-            <label>Star Color</label><br>
-            <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%;">
-        </div>
+        <label>Color</label><br>
+        <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%; margin-bottom: 10px;">
 
-        <div>
-            <button onclick="setShape('circle')" style="padding: 10px;">Circle</button>
-            <button onclick="setShape('square')" style="padding: 10px;">Square</button>
-            <button id="accelPermsButton"
-                style="padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; margin-top: 10px; font-weight: bold;">
-                OFFLINE: Enable Tilt Gravity
-            </button>
-            <button onclick="supernova()" style="background: orange; padding: 10px; width: 80%; margin-top: 10px;">
-                SUPERNOVA (Emergency Push)
-            </button>
+        <br>
+        <button onclick="setShape('circle')">Circle</button>
+        <button onclick="setShape('square')">Square</button>
 
-            <div style="margin-top: 10px;">
-                <label>Persistence (Stay Forever):</label>
-                <input type="checkbox" id="persistenceToggle">
-            </div>
-            <div style="margin-top: 15px;">
-                <label>Star Type (Mass)</label><br>
-                <select id="starMass" style="padding: 5px; width: 80%; background: #333; color: white;">
-                    <option value="1">Light</option>
-                    <option value="3">Medium</option>
-                    <option value="8">Heavy</option>
-                </select>
-            </div>
-            <div id="emergency-controls" style="margin-top: 20px; border-top: 1px solid #555; padding-top: 10px;">
-                <button onclick="supernova()"
-                    style="background: linear-gradient(to bottom, #ff9800, #e65100); color: white; padding: 15px; width: 100%; border-radius: 10px; border: none; font-weight: bold; box-shadow: 0 4px #bf360c;">
-                    ACTIVATE SUPERNOVA
-                </button>
-            </div>
-        </div>
+        <br><br>
+        <label>Mass</label><br>
+        <select id="starMass">
+            <option value="1">Light</option>
+            <option value="3">Medium</option>
+            <option value="8">Heavy</option>
+        </select>
+
+        <br><br>
+        <button id="accelPermsButton">Enable Tilt Gravity</button>
     </div>
 
     <div id="touch-pad" style="width: 100vw; height: 100vh;"></div>

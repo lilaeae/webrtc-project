@@ -6,7 +6,7 @@ const roomId = urlParams.get('room');
 
 let peer;
 let currentShape = 'circle';
-let lastTiltSent = 0; 
+let lastTiltSent = 0;
 let lastDrawTime = 0;
 
 const getColor = () => {
@@ -40,7 +40,7 @@ const startPeer = () => {
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
         if (data.type === 'vibrate' && navigator.vibrate) {
-            navigator.vibrate(data.intensity); // Phone shakes when stars are in danger!
+            navigator.vibrate(data.intensity); 
         }
     });
 
@@ -74,7 +74,7 @@ const sendTouchData = (e) => {
             mass: parseFloat(document.getElementById('starMass').value)
         };
         peer.send(JSON.stringify(data));
-        lastDrawTime = now; 
+        lastDrawTime = now;
 
         if (navigator.vibrate) navigator.vibrate(10);
     }
@@ -105,21 +105,13 @@ accelButton.onclick = () => {
         DeviceOrientationEvent.requestPermission()
             .then(permissionState => {
                 if (permissionState === 'granted') {
-                    accelButton.style.background = '#2ecc71';
-                    accelButton.innerText = "GRAVITY ONLINE";
+                    accelButton.innerText = "Tilt Gravity ON";
                     window.addEventListener('deviceorientation', handleTilt);
                 }
             })
             .catch(console.error);
     } else {
-        accelButton.style.background = '#2ecc71';
-        accelButton.innerText = "GRAVITY ONLINE";
+        accelButton.innerText = "Tilt Gravity ON";
         window.addEventListener('deviceorientation', handleTilt);
-    }
-};
-
-window.supernova = () => {
-    if (peer && peer.connected) {
-        peer.send(JSON.stringify({ type: 'supernova' }));
     }
 };

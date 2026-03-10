@@ -34,26 +34,22 @@ const startPeer = () => {
 
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
-
-        // 1. Handle Tilt/Gravity
         if (data.type === 'gravity') {
             currentGravityX = data.tiltX / 10;
             currentGravityY = data.tiltY / 10;
         }
-        // 2. Handle Supernova Explosion
+
         else if (data.type === 'supernova') {
             stars.forEach(star => {
-                // Calculate direction from center of screen to the star
+                
                 const dx = star.x - canvas.width / 2;
                 const dy = star.y - canvas.height / 2;
-
-                // Add a sudden burst of velocity outward
                 star.vx += dx * 0.1;
                 star.vy += dy * 0.1;
             });
             console.log("SUPERNOVA ACTIVATED");
         }
-        // 3. Default: Draw a new Star
+
         else {
             const screenX = data.x * canvas.width;
             const screenY = data.y * canvas.height;
@@ -182,16 +178,13 @@ function animate() {
     stars = stars.filter(star => {
         if (blackHole.active) {
             const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
-
-            // If star hits the event horizon, start shrinking it
             if (dist < blackHole.size) {
                 star.isDead = true;
             }
         }
 
-        // Remove star only when it's too small to see
         if (star.isDead) {
-            star.size *= 0.85; // Rapidly shrink
+            star.size *= 0.85; 
             if (star.size < 0.5) {
                 starsLost++;
                 return false;
@@ -220,7 +213,7 @@ function animate() {
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
     ctx.fillText(`Constellation Score: ${score}`, 20, 40);
-    // Update UI elements
+
     document.getElementById('starCount').innerText = stars.length;
     document.getElementById('currentScore').innerText = score;
 
