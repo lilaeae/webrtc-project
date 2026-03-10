@@ -1,3 +1,4 @@
+c
 <!DOCTYPE html>
 <html>
 
@@ -11,22 +12,29 @@
 </head>
 <!-- this is 4 the phone (answering) aka other half of handshake -->
 
-<body
-    style="background: #222; color: white; text-align: center; margin: 0; overflow: hidden; font-family: sans-serif; user-select: none;">
+<body style="background: #000; color: white; margin: 0; overflow: hidden; font-family: monospace; user-select: none;">
 
     <div id="controls"
-        style="position: absolute; top: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 15px; box-sizing: border-box; z-index: 10;">
+        style="position: absolute; top: 0; width: 100%; padding: 15px; box-sizing: border-box; z-index: 10;">
         <p id="msg" style="margin: 0 0 10px 0;">Connecting...</p>
 
-        <div style="margin-bottom: 15px;">
-            <label>Star Color</label><br>
-            <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%;">
-        </div>
+        <label>Color</label><br>
+        <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%; margin-bottom: 10px;">
 
-        <div>
-            <button onclick="setShape('circle')" style="padding: 10px;">Circle</button>
-            <button onclick="setShape('square')" style="padding: 10px;">Square</button>
-        </div>
+        <br>
+        <button onclick="setShape('circle')">Circle</button>
+        <button onclick="setShape('square')">Square</button>
+
+        <br><br>
+        <label>Mass</label><br>
+        <select id="starMass">
+            <option value="1">Light</option>
+            <option value="3">Medium</option>
+            <option value="8">Heavy</option>
+        </select>
+
+        <br><br>
+        <button id="accelPermsButton">Enable Tilt Gravity</button>
     </div>
 
     <div id="touch-pad" style="width: 100vw; height: 100vh;"></div>

@@ -2,7 +2,12 @@ const socket = io();
 const roomId = Math.random().toString(36).substr(2, 9);
 // const myIP = '172.30.103.155';
 const myIP = '192.168.129.61';
-const controllerUrl = `http://${myIP}:3001/receiver.html?room=${roomId}`;
+const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
+let currentGravityX = 0;
+let currentGravityY = 0;
+let blackHole = { x: 0, y: 0, active: false, size: 50 };
+let starsCreated = 0;
+let starsLost = 0;
 
 socket.emit('join-room', roomId);
 
@@ -29,12 +34,29 @@ const startPeer = () => {
 
     peer.on('data', (raw) => {
         const data = JSON.parse(raw);
-        const screenX = data.x * canvas.width;
-        const screenY = data.y * canvas.height;
+        if (data.type === 'gravity') {
+            currentGravityX = data.tiltX / 10;
+            currentGravityY = data.tiltY / 10;
+        }
 
-        // Create a new persistent star
-        const newStar = new Star(screenX, screenY, data.color, data.shape);
-        stars.push(newStar);
+        else if (data.type === 'supernova') {
+            stars.forEach(star => {
+                
+                const dx = star.x - canvas.width / 2;
+                const dy = star.y - canvas.height / 2;
+                star.vx += dx * 0.1;
+                star.vy += dy * 0.1;
+            });
+            console.log("SUPERNOVA ACTIVATED");
+        }
+
+        else {
+            const screenX = data.x * canvas.width;
+            const screenY = data.y * canvas.height;
+            const newStar = new Star(screenX, screenY, data.color, data.shape, data.mass);
+            stars.push(newStar);
+            starsCreated++;
+        }
     });
 
     peer.on('error', (err) => console.error("peer error:", err));
@@ -46,7 +68,7 @@ new QRCode(document.getElementById("qrcode"), {
     height: 256
 });
 
-// socket events
+
 socket.on('user-connected', () => {
     console.log("phone has entered the room!");
     document.getElementById('status').innerText = "phone detected... handshaking...";
@@ -64,7 +86,6 @@ const canvas = document.getElementById('spaceCanvas');
 const ctx = canvas.getContext('2d');
 let stars = [];
 
-// Match canvas to screen size
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -73,60 +94,141 @@ window.onresize = resize;
 resize();
 
 class Star {
-    constructor(x, y, color, shape) {
+    constructor(x, y, color, shape, mass) {
         this.x = x;
         this.y = y;
         this.color = color || 'white';
         this.shape = shape || 'circle';
-        this.size = 5;
-        this.vx = 0; // Velocity X (for gravity later)
-        this.vy = 0; // Velocity Y
+        this.mass = mass || 1;
+        this.size = this.mass * 2 + 2;
+        this.vx = 0;
+        this.vy = 0;
     }
 
-    update(gravityX, gravityY) {
-        // Apply tilt to velocity
-        this.vx += gravityX * 0.05;
-        this.vy += gravityY * 0.05;
+    update(gravityX, gravityY, blackHole) {
+        this.vx += (gravityX * 0.03) / this.mass;
+        this.vy += (gravityY * 0.03) / this.mass;
 
-        // Apply friction so they don't slide forever
-        this.vx *= 0.98;
-        this.vy *= 0.98;
+        if (blackHole.active) {
+            const dx = blackHole.x - this.x;
+            const dy = blackHole.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Move the star
+            if (distance < 400) {
+                const force = (400 - distance) / (10000 * this.mass);
+                this.vx += dx * force;
+                this.vy += dy * force;
+            }
+        }
+        const friction = this.mass === 0.5 ? 0.999 : 0.95;
+        this.vx *= friction;
+        this.vy *= friction;
+
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 
     draw() {
+        ctx.save();
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = this.mass * 5;
         ctx.shadowColor = this.color;
+
         ctx.beginPath();
         if (this.shape === 'circle') {
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         } else {
-            // Square/Asteroid shape
-            ctx.rect(this.x - 5, this.y - 5, 10, 10);
+            ctx.rect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
         }
         ctx.fill();
+        ctx.restore();
     }
 }
 
-// The Animation Loop (60fps)
+setInterval(() => {
+    blackHole.active = true;
+    blackHole.x = Math.random() * canvas.width;
+    blackHole.y = Math.random() * canvas.height;
+    setTimeout(() => { blackHole.active = false; }, 5000);
+}, 10000);
+
+function drawBlackHole() {
+    if (!blackHole.active) return;
+    const pulse = Math.sin(Date.now() / 200) * 10;
+
+    ctx.beginPath();
+    ctx.arc(blackHole.x, blackHole.y, blackHole.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'black';
+    ctx.shadowBlur = 50;
+    ctx.shadowColor = 'purple';
+    ctx.fill();
+}
+
 function animate() {
-    // Clear the screen slightly to leave faint trails
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    if (blackHole.active) {
+        drawBlackHole();
+    }
+
+    stars = stars.filter(star => {
+        if (blackHole.active) {
+            const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
+            if (dist < blackHole.size) {
+                star.isDead = true;
+            }
+        }
+
+        if (star.isDead) {
+            star.size *= 0.85; 
+            if (star.size < 0.5) {
+                starsLost++;
+                return false;
+            }
+        }
+        return true;
+    });
+
+    let isNearBlackHole = false;
+
     stars.forEach(star => {
+        if (blackHole.active) {
+            const dist = Math.hypot(blackHole.x - star.x, blackHole.y - star.y);
+            if (dist < 400) isNearBlackHole = true;
+        }
+        star.update(currentGravityX, currentGravityY, blackHole);
         star.draw();
     });
+
+    if (isNearBlackHole && peer && peer.connected) {
+        peer.send(JSON.stringify({ type: 'vibrate', intensity: 50 }));
+    }
+
+    const score = starsCreated - starsLost;
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText(`Constellation Score: ${score}`, 20, 40);
+
+    document.getElementById('starCount').innerText = stars.length;
+    document.getElementById('currentScore').innerText = score;
+
+    const statusEl = document.getElementById('systemStatus');
+    if (blackHole.active) {
+        statusEl.innerText = "WARNING: SINGULARITY DETECTED";
+        statusEl.style.color = "red";
+    } else {
+        statusEl.innerText = "SYSTEM STABLE";
+        statusEl.style.color = "lime";
+    }
 
     requestAnimationFrame(animate);
 }
 animate();
+
+
 
