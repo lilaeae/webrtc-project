@@ -32,6 +32,9 @@ additional ways to let the user "build" the space starfield to their own liking
 
 ### week 4: adapting
 * **Goal:** receive consult and see what is lacking, and work this out first. Workout a level system and perhaps elevate the black hole interactivity? adding different stages or an increasing black hole..
+* **progress:** * i had changed my intiial ssl certificate method to use ngrok after checking in with ai whether my methods were outdated or not and it suggested to adapt to ngrok, post consult it was mentioned to not do this so i went back in my commit history and set my intial set up again
+
+    * undoing errors post consult
 
 ### how i used ai
 Week 1: I used Gemini to help structure the project architecture when i missed details or left out a line, usually a typo would occur or something of the sort which i would overlook
