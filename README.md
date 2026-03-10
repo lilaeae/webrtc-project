@@ -46,9 +46,6 @@ some prompts used:
 "im currently on feature-galaxy-physics and i see that i suddenly have a controller html and index html and a receiver html, my files got spread across wrong branches i think how do i fix this safely"
 "how do i change the peer on data in caller js here? I mistyped and can't find the issue"
 
-
-
-
 ### reflection
 The AI helped me understand the "signaling" concept which was confusing at first when i had to go through the walkthrough once again.
 
