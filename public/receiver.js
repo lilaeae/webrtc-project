@@ -1,6 +1,5 @@
 const socket = io();
 let peer;
-const myIP = '192.168.129.61'; 
 
 let currentGravityX = 0;
 let currentGravityY = 0;
@@ -19,11 +18,11 @@ canvas.height = window.innerHeight;
 
 
 socket.on('connect', () => {
-    console.log("My Peer ID:", socket.id);
-    const url = `https://${myIP}:3001/sender.html?peer=${socket.id}`;
+    console.log("my peer ID:", socket.id);
+    const url = `${window.location.origin}/sender.html?peer=${socket.id}`;
 
     const qrContainer = document.getElementById("qrcode");
-    qrContainer.innerHTML = ""; 
+    qrContainer.innerHTML = "";
     new QRCode(qrContainer, {
         text: url,
         width: 120,
@@ -34,7 +33,7 @@ socket.on('connect', () => {
 // web rtc
 socket.on('signal', (myId, signal, peerId) => {
     if (!peer) {
-        
+
         peer = new SimplePeer({
             initiator: false,
             trickle: true,
@@ -48,21 +47,21 @@ socket.on('signal', (myId, signal, peerId) => {
         peer.on('connect', () => {
             console.log("PHONE CONNECTED!");
             document.getElementById('status').innerText = "CONTROLLER LINKED";
-            document.getElementById('qrcode').style.display = 'none'; 
+            document.getElementById('qrcode').style.display = 'none';
 
-          
+
             document.getElementById('instructions-modal').style.display = 'block';
         });
 
         peer.on('data', (raw) => {
-            if (!gameStarted) return; 
+            if (!gameStarted) return;
 
             const data = JSON.parse(raw);
             if (data.type === 'gravity') {
                 currentGravityX = data.tiltX / 10;
                 currentGravityY = data.tiltY / 10;
             } else {
-               
+
                 const newStar = new Star(
                     data.x * canvas.width,
                     data.y * canvas.height,
@@ -118,7 +117,7 @@ class Star {
         this.x += this.vx;
         this.y += this.vy;
 
-       
+
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
@@ -143,7 +142,7 @@ function startGame() {
     document.getElementById('instructions-modal').style.display = 'none';
     gameStarted = true;
 
-// a black hole logicc 
+    // a black hole logicc 
     setInterval(() => {
         blackHole.active = true;
         blackHole.x = Math.random() * canvas.width;

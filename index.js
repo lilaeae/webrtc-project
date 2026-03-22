@@ -6,7 +6,19 @@ const express = require('express');
 const app = express();
 const https = require('https');
 
-const myIP = '192.168.129.61';
+function getLocalIP() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+}
+const myIP = getLocalIP();
+console.log(`📡 Discovered Local IP: ${myIP}`);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssl-'));
 const keyPath = path.join(tmpDir, 'key.pem');
