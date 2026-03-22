@@ -1,22 +1,20 @@
 const express = require('express');
-const http = require('http');
-const ngrok = require('@ngrok/ngrok');
+
+const app = express();
+const https = require('https');
+
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssl-'));
+const keyPath = path.join(tmpDir, 'key.pem');
+const certPath = path.join(tmpDir, 'cert.pem');
+ execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=192.168.129.61" -addext "subjectAltName=IP:192.168.129.61,DNS:localhost"`, { stdio: 'ignore' });
+// execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=172.30.103.175" -addext "subjectAltName=IP:172.30.103.175,DNS:localhost"`, { stdio: 'ignore' });
 
 const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
-let ngrokUrl = null;
-
 app.use(express.static('public', { index: 'caller.html' }));
 
-app.get('/ngrok-url', (req, res) => {
-    if (ngrokUrl) {
-        res.json({ url: ngrokUrl });
-    } else {
-        res.status(503).json({ error: 'ngrok tunnel not ready yet' });
-    }
-});
 
 const PORT = 3001;
 server.listen(PORT, async () => {
