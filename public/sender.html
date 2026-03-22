@@ -4,65 +4,141 @@
 <head>
     <meta charset="UTF-8">
     <title>Space Controller - Sender</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <style>
         body {
-            background: #000;
-            color: white;
-            font-family: monospace;
+            background: #050510;
+            color: #00ffff;
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         #controls {
             position: absolute;
             top: 0;
             width: 100%;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(180deg, rgba(0, 20, 40, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        #msg {
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 5px cyan;
+            margin-top: 0;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
         }
 
         button {
+            flex: 1;
             padding: 10px;
-            margin: 5px;
-            background: #333;
+            margin: 2px;
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button.active {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            appearance: none;
+            background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        #supernovaBtn {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+            border-color: #ff4444;
+            margin-top: 10px;
+        }
+
+        #supernovaBtn:active {
+            background: #ff4444;
             color: white;
-            border: 1px solid #555;
+            box-shadow: 0 0 15px #ff4444;
         }
 
         #touch-pad {
             width: 100vw;
             height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            
         }
     </style>
 </head>
 
 <body>
-
     <div id="controls">
         <p id="msg">Initializing Link...</p>
-        <label>Star Color</label><br>
-        <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%;"><br><br>
 
-        <button onclick="setShape('circle')">Circle</button>
-        <button onclick="setShape('square')">Square</button>
+        <div style="margin-bottom: 10px;">
+            <label>Star Color</label>
+            <input type="range" id="colorHue" min="0" max="360" value="200">
+        </div>
 
-        <br><br>
-        <label>Mass</label>
-        <select id="starMass">
-            <option value="1">Light</option>
-            <option value="3">Medium</option>
-            <option value="8">Heavy</option>
-        </select>
-        <br><br>
-        <button id="accelPermsButton">Enable Tilt Gravity</button>
+        <div class="row">
+            <button id="shape-circle" class="active" onclick="setShape('circle')">Circle</button>
+            <button id="shape-square" onclick="setShape('square')">Square</button>
+        </div>
+
+        <div class="row">
+            <button id="mass-1" class="active" onclick="setMass(1)">Light</button>
+            <button id="mass-3" onclick="setMass(3)">Mid</button>
+            <button id="mass-8" onclick="setMass(8)">Heavy</button>
+        </div>
+
+        <div class="row">
+            <button id="accelPermsButton">Enable Tilt Gravity</button>
+        </div>
     </div>
 
+    <canvas id="trailCanvas"
+        style="position: absolute; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:0;"></canvas>
     <div id="touch-pad"></div>
 
     <script src="sender.js"></script>
