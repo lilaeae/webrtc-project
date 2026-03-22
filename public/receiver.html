@@ -1,43 +1,29 @@
-c
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Space Controller</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+    <meta charset="UTF-8">
+    <title>Space Conductor - Receiver</title>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://unpkg.com/simple-peer@9/simplepeer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
 </head>
-<!-- this is 4 the phone (answering) aka other half of handshake -->
 
-<body style="background: #000; color: white; margin: 0; overflow: hidden; font-family: monospace; user-select: none;">
+<body style="background: #000; margin: 0; overflow: hidden;">
+    <canvas id="spaceCanvas"></canvas>
 
-    <div id="controls"
-        style="position: absolute; top: 0; width: 100%; padding: 15px; box-sizing: border-box; z-index: 10;">
-        <p id="msg" style="margin: 0 0 10px 0;">Connecting...</p>
+    <div id="ui-overlay" style="position: absolute; top: 0; width: 100%; pointer-events: none;">
+        <h1 style="color: white; text-align: center;">Space Conductor</h1>
+        <div id="qrcode" style="display: flex; justify-content: center; margin: 20px; pointer-events: auto;"></div>
+        <div id="status" style="color: white; text-align: center;">Waiting for Controller...</div>
 
-        <label>Color</label><br>
-        <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%; margin-bottom: 10px;">
-
-        <br>
-        <button onclick="setShape('circle')">Circle</button>
-        <button onclick="setShape('square')">Square</button>
-
-        <br><br>
-        <label>Mass</label><br>
-        <select id="starMass">
-            <option value="1">Light</option>
-            <option value="3">Medium</option>
-            <option value="8">Heavy</option>
-        </select>
-
-        <br><br>
-        <button id="accelPermsButton">Enable Tilt Gravity</button>
+        <div id="game-stats"
+            style="color: cyan; font-family: monospace; font-size: 1.2rem; margin: 20px; pointer-events: none;">
+            <div>STARS IN GALAXY: <span id="starCount">0</span></div>
+            <div>CURRENT SCORE: <span id="currentScore">0</span></div>
+            <div>SYSTEM STATUS: <span id="systemStatus" style="color: lime;">STABLE</span></div>
+        </div>
     </div>
-
-    <div id="touch-pad" style="width: 100vw; height: 100vh;"></div>
 
     <script src="receiver.js"></script>
 </body>

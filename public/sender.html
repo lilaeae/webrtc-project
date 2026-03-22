@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Space Controller - Sender</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: monospace;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #controls {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        #touch-pad {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="controls">
+        <p id="msg">Initializing Link...</p>
+        <label>Star Color</label><br>
+        <input type="range" id="colorHue" min="0" max="360" value="200" style="width: 80%;"><br><br>
+
+        <button onclick="setShape('circle')">Circle</button>
+        <button onclick="setShape('square')">Square</button>
+
+        <br><br>
+        <label>Mass</label>
+        <select id="starMass">
+            <option value="1">Light</option>
+            <option value="3">Medium</option>
+            <option value="8">Heavy</option>
+        </select>
+        <br><br>
+        <button id="accelPermsButton">Enable Tilt Gravity</button>
+    </div>
+
+    <div id="touch-pad"></div>
+
+    <script src="sender.js"></script>
+</body>
+
+</html>
