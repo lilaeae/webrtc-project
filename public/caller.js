@@ -1,7 +1,8 @@
 const socket = io();
 const roomId = Math.random().toString(36).substr(2, 9);
 // const myIP = '172.30.103.155';
-const myIP = '172.30.103.146';
+// const myIP = '172.30.103.175';
+const myIP = '192.168.129.61';
 const controllerUrl = `https://${myIP}:3001/receiver.html?room=${roomId}`;
 let currentGravityX = 0;
 let currentGravityY = 0;

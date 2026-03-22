@@ -9,8 +9,8 @@ const https = require('https');
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssl-'));
 const keyPath = path.join(tmpDir, 'key.pem');
 const certPath = path.join(tmpDir, 'cert.pem');
-// execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=192.168.129.61" -addext "subjectAltName=IP:192.168.129.61,DNS:localhost"`, { stdio: 'ignore' });
-execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=172.30.103.146" -addext "subjectAltName=IP:172.30.103.146,DNS:localhost"`, { stdio: 'ignore' });
+ execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=192.168.129.61" -addext "subjectAltName=IP:192.168.129.61,DNS:localhost"`, { stdio: 'ignore' });
+// execSync(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/CN=172.30.103.175" -addext "subjectAltName=IP:172.30.103.175,DNS:localhost"`, { stdio: 'ignore' });
 
 const server = https.createServer({
     key: fs.readFileSync(keyPath),
