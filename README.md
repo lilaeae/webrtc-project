@@ -67,7 +67,7 @@ Week 4: Trying to go back from ngrok, i asked ai to check if i was approaching t
     * refined layout of the desktop receiver UI, anchoring stats cleanly, restructuring the QR code size, and adding an introduction modal that defers game loop start until a button is clicked.
     * safely staged and resolved divergent git branch merge conflicts post-refactor, ensuring our fresh codebase synced perfectly to the remote repository.
 
-### how i used ai
+#### how i used ai
 
 Week 5 Before starting again, i had received consult feedback that my structure with the sender & receiver was actually the other way around, i had put the caller on the desktop instead! so this had to be fixed and i tried using Gemini to do so as my entire project structure needed some cleaning as well, but later i noticed it affected some of my functionalities as well and i had to go back to fix connection problems once again
 ![structure](assets/ai_structure.png)
@@ -78,13 +78,12 @@ I utilized the AI to figure out why the SimplePeer connection failed on the send
 ![merge_issue.2](assets/ai_merge_2.png)
 ![merge_issue.3](assets/ai_merge_3.png)
 
-
-### how i used ai
-
-some other prompts used:
+some other prompts used in earlier weeks:
 
 "let's work on differnt star types, like heavy ones that move slower"
 "im currently on feature-galaxy-physics and i see that i suddenly have a controller html and index html and a receiver html, my files got spread across wrong branches i think how do i fix this safely"
 "how do i change the peer on data in caller js here? I mistyped and can't find the issue"
 "
+
+
 
