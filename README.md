@@ -73,10 +73,16 @@ Trying to go back from ngrok, i asked ai to check if i was approaching the step 
 #### how i used ai
 
 * Before starting again, i had received consult feedback that my structure with the sender & receiver was actually the other way around, i had put the caller on the desktop instead! so this had to be fixed and i tried using Gemini to do so as my entire project structure needed some cleaning as well, but later i noticed it affected some of my functionalities as well and i had to go back to fix connection problems once again
-![structure](assets/ai_structure.png)
+
 
 * I utilized the AI to figure out why the SimplePeer connection failed on the sender screen (missing the return signal listener), fine-tune the game loop physics, add custom touch gesture tracking without breaking HTML inputs and helping me navigate terminal commands to resolve a messy detached Git conflict.
 ![simple_peer1](assets/ai_phone.png)
+
+i couldn't always fix it right away, so id go back and review with ai what i'm doing wrong in prompts like this:
+
+![merge_issue.1](assets/ai_phone_2.png)
+
+for merging conflicts, id try to go through resolving it step by step, making sure i dont harm any other branches with prompts like this:
 ![merge_issue.1](assets/ai_merge.png)
 ![merge_issue.2](assets/ai_merge_2.png)
 ![merge_issue.3](assets/ai_merge_3.png)
